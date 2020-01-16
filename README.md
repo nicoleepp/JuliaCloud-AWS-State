@@ -9,16 +9,37 @@ matt.brzezinski@invenia.ca
 - Create a simple straight-forward systems design
 
 ## Executive Summary  -- TODO
+Using AWS Services in Julia is currently more difficult than it needs to be.
+Users are currently limited to the low-level wrappers which require the knowledge of everything that goes into an operation.
+Or they are limited to high-level wrappers which may or may not be available for the service which the want to use.
 
 ## Current State
 There are two categories of packages currently supporting AWS usage in `JuliaCloud`.
 
-- Low-Level Wrapper
-
+### Low-Level Wrapper
 [`AWSCore.jl`](https://github.com/JuliaCloud/AWSCore.jl) is the most popular low-level package.
-`AWSCore.jl` works by parsing down the [`AWS SDK JS`](https://github.com/aws/aws-sdk-js) to create definitions for each AWS Service.
-Creating / updating these service definitions is a manual process, the last update was `2019-12-03`, before that `2018-08-01`.
+The package consists of five major files:
 
+- `AWSAPI.jl`: Generates the `Services.jl` file which contains the low-level API wrappers for each AWS Service
+- `AWSCore.jl`: Processes `json, query, xml, etc.` request protocols
+- `AWSCredentials.jl`: Handles retrieving AWS Credentials from locations such as environment variables, credential / configuration files, etc.
+- `Services.jl`: Contains a function for every AWS Service
+- `signaturev4.jl`: Creates the `AWS4AuthLayer` to be inserted into the HTTP stack and signs the requests with AWS authentication
+
+Inside of `Services.jl` each AWS Service has its own respective service, which is used to call it:
+```julia
+function s3(aws::AWSConfig, verb, resource, args=[])
+    AWSCore.service_rest_xml(
+        aws;
+        service      = get(aws, :service_name, "s3"),
+        version      = "2006-03-01",
+        verb         = verb,
+        resource     = resource,
+        args         = args)
+end
+```
+
+`AWSCore.jl` works by running a `Node.js` server which parsing down the [`AWS SDK JS`](https://github.com/aws/aws-sdk-js) to create definitions for each AWS Service.
 To use the package it is then up to the end user to know how to call the appropriate operation, which can be done by referencing the [`AWS Documentation`](https://docs.aws.amazon.com/index.html).
 
 e.g. [`ListBuckets`](https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListBuckets.html) operation on `AWS S3`
@@ -27,20 +48,30 @@ using AWSCore.Services
 Services.s3(aws_config(), "GET", "/")
 ```
 
-- High-Level Wrapper(s)
+Having functions defined for each service in this form does not take advantage multiple dispatch.
+In its current state there is no automated or documented steps to update the `Services.jl` file.
+If Amazon releases a new service, or updates the API for an existing service the process of updating `Services.jl` needs to be done manually.
 
+#### High-Level Wrapper(s)
 These packages are much more simple to use as the end user only needs to know the operation they wish to perform.
+However these high-level packages are currently hand written, limited to certain AWS Services, are prone to errors and/or have limited functionality.
 
-e.g. [`ListBuckets`] operation on `AWS S3`
+To use a package such as [`AWSS3.jl`](https://github.com/JuliaCloud/AWSS3.jl), the end user only needs to know how to call the operation.
+
+e.g. `ListBuckets` operation on `AWS S3`
 ```julia
 using AWSCore
 
 s3_list_buckets()
 ```
 
-However, these high-level packages are currently hand written, limited to certain AWS Services, are prone to errors or limited functionality.
-
 ## Proposed Solution -- TODO
+
+### Low-Level
+- automate updating definitions for aws services
+
+### High-Level
+- create a new package similar to boto3 which allows for creating an AWS Service object and having its functions defined at a high level
 
 ## In Scope -- TODO
 
@@ -82,6 +113,7 @@ with open("api_files.txt") as f:
 ```
 
 ### List of low-level wrappers
+- [`JuliaCloud/AWSCore.jl`](https://github.com/JuliaCloud/AWSCore.jl)
 - [`JuliaCloud/AWSAPI.jl`](https://github.com/JuliaCloud/AWSAPI.jl)
 - [`JuliaCloud/AWS.jl`](https://github.com/JuliaCloud/AWS.jl)
 
