@@ -66,12 +66,19 @@ s3_list_buckets()
 ```
 
 ## Proposed Solution -- TODO
+I propose that we tag the current version of `AWSCore.jl` to `v1.0`, and begin working on `v2.0`.
+Version 2 of `AWSCore.jl` would consist of:
 
-### Low-Level
-- automate updating definitions for aws services
+- Taking advantage of Julia's multiple dispatch for making AWS service requests
+- Automating the creation and updating of service definitions using GitHub actions
 
-### High-Level
-- create a new package similar to boto3 which allows for creating an AWS Service object and having its functions defined at a high level
+In addition a separate package `AWS2.jl` would be created.
+This package would automate the creation of high-level packages, by creating sub-modules for each AWS Service. 
+Both of these packages would also include the automation of unit testing for both low and high level wrappers.
+
+The architecture for a system would look like:
+
+### TODO -- Add image from Draw.IO
 
 ## In Scope -- TODO
 
@@ -81,7 +88,12 @@ s3_list_buckets()
 
 ## Use Cases -- TODO
 
-## Dependencies -- TODO
+## Dependencies
+To automate the creation of high and low level wrappers in Julia we must pull AWS Service definitions from an external source.
+The [`JavaScript SDK`](https://github.com/aws/aws-sdk-js/tree/master/apis) is the most simple to parse as all service definitions are defined as JSON files.
+While other SDKs define them on a per language basis.
+
+We need to also have some service to run the code which will automate the creation or updating of a service, such as [`GitHub actions`](https://github.com/features/actions).
 
 ## Functional Requirements -- TODO
 
@@ -94,9 +106,6 @@ s3_list_buckets()
 ## Open Issues -- TODO
 
 ## Appendix
-
-### Links
-- [`AWS SDK JS`](https://github.com/aws/aws-sdk-js/tree/master/apis)
 
 ### Number of Amazon Services
 - `api_files.txt` is a list of all files in the [`AWS SDK JS APIs`](https://github.com/aws/aws-sdk-js/tree/master/apis)
@@ -113,16 +122,27 @@ with open("api_files.txt") as f:
 ```
 
 ### List of low-level wrappers
-- [`JuliaCloud/AWSCore.jl`](https://github.com/JuliaCloud/AWSCore.jl)
-- [`JuliaCloud/AWSAPI.jl`](https://github.com/JuliaCloud/AWSAPI.jl)
 - [`JuliaCloud/AWS.jl`](https://github.com/JuliaCloud/AWS.jl)
+- [`JuliaCloud/AWSAPI.jl`](https://github.com/JuliaCloud/AWSAPI.jl)
+- [`JuliaCloud/AWSCore.jl`](https://github.com/JuliaCloud/AWSCore.jl)
 
 ### List of high-level wrappers
-- [`JuliaCloud/AWSSQS.jl`](https://github.com/JuliaCloud/AWSSQS.jl)
 - [`JuliaCloud/AWSS3.jl`](https://github.com/JuliaCloud/AWSS3.jl)
-- [`samoconnor/AWSNS.jl`](https://github.com/samoconnor/AWSSNS.jl)
-- [`samoconnor/AWSIAM.jl`](https://github.com/samoconnor/AWSIAM.jl)
+- [`JuliaCloud/AWSSQS.jl`](https://github.com/JuliaCloud/AWSSQS.jl)
+- [`samoconnor/AWSDB.jl`](https://github.com/samoconnor/AWSSDB.jl)
 - [`samoconnor/AWSEC2.jl`](https://github.com/samoconnor/AWSEC2.jl)
+- [`samoconnor/AWSIAM.jl`](https://github.com/samoconnor/AWSIAM.jl)
 - [`samoconnor/AWSLambda.jl`](https://github.com/samoconnor/AWSLambda.jl)
 - [`samoconnor/AWSSES.jl`](https://github.com/samoconnor/AWSSES.jl)
-- [`samoconnor/AWSDB.jl`](https://github.com/samoconnor/AWSSDB.jl)
+- [`samoconnor/AWSNS.jl`](https://github.com/samoconnor/AWSSNS.jl)
+
+### List of available AWS SDKs
+- [`.NET`](https://github.com/aws/aws-sdk-net)
+- [`Android`](https://github.com/aws-amplify/aws-sdk-android)
+- [`C++`](https://github.com/aws/aws-sdk-cpp)
+- [`Go`](https://github.com/aws/aws-sdk-go)
+- [`Java - v1`](https://github.com/aws/aws-sdk-java)
+- [`Java - v2`](https://github.com/aws/aws-sdk-java-v2)
+- [`JavaScript`](https://github.com/aws/aws-sdk-js)
+- [`PHP`](https://github.com/aws/aws-sdk-php)
+- [`Ruby`](https://github.com/aws/aws-sdk-ruby)
