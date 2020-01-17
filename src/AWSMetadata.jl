@@ -113,6 +113,9 @@ function _generate_service_definitions(services)
 end
 
 function _generate_service_definition(service)
+    # TODO:
+    # - Do not use service["endpointPrefix"] when generating, this does not give a valid
+    # name back for every service
     println("Generating Service for ", service["serviceId"])
     request_protocol = service["protocol"]
     service_name = service["endpointPrefix"]
