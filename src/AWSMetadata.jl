@@ -33,8 +33,6 @@ function parse_aws_metadata()
     function _process_service(file, version)
         data_changed = true
         push!(metadata, file["name"] => Dict("version" => version, "sha" => file["sha"]))
-        _generate_low_level(file)
-        _generate_high_level(file)
         push!(services_modified, file["name"])
     end
 
@@ -65,19 +63,80 @@ function parse_aws_metadata()
 
     if data_changed
         println(services_modified)
+        _generate_low_level_wrapper(files)
         open("metadata.json", "w") do f
             print(f, json(OrderedDict(metadata), 2))
         end
     end
 end
 
-function _generate_low_level(service)
-    # TODO - Low Level Wrapper
+"""
+    _generate_low_level_wrapper(services)
+
+Generates the low level AWSCorePrototype wrapper.
+"""
+function _generate_low_level_wrapper(services)
+    println("Generating low level wrapper")
+    service_definitions = _generate_service_definitions(services)
+
+    template = """
+    module AWSCoreServices
+
+    include("AWSCorePrototype.jl")
+
+    $(join(service_definitions, "\n"))
+
+    end
+    """
+
+    open("AWSCorePrototypeServices.jl", "w") do f
+        print(f, template)
+    end
 end
 
-function _generate_high_level(service)
-    # TODO - High Level Wrapper
+function _generate_service_definitions(services)
+    service_definitions = String[]
+
+    for service in services
+        request = HTTP.get(service["download_url"])
+        service_metadata = JSON.parse(String(request.body))["metadata"]
+
+        definition = _generate_service_definition(service_metadata)
+        if definition != nothing
+            push!(service_definitions, definition)
+        end
+    end
+
+    return service_definitions
 end
 
-parse_aws_metadata()
+function _generate_service_definition(service)
+    println("Generating Service for ", service["serviceId"])
+    request_protocol = service["protocol"]
+    service_name = service["endpointPrefix"]
+    api_version = service["apiVersion"]
+
+    if request_protocol == "rest-xml"
+        return "const $service_name = AWSCorePrototype.RestXMLService(\"$service_name\", \"$api_version\")"
+    elseif request_protocol == "json"
+        json_version = service["jsonVersion"]
+        target = service["targetPrefix"]
+        return "const $service_name = AWSCorePrototype.JSONService(\"$service_name\", \"$api_version\", \"$json_version\", \"$target\")"
+    elseif request_protocol == "query" || request_protocol == "ec2"
+        return "const $service_name = AWSCorePrototype.QueryService(\"$service_name\", \"$api_version\")"
+    elseif request_protocol == "rest-json"
+        return "const $service_name = AWSCorePrototype.RestJSONService(\"$service_name\", \"$api_version\")"
+    else
+        println(service_name, " uses a new protocol ", request_protocol)
+    end
+end
+
+
+headers = ["User-Agent" => "JuliaCloud/AWSCore.jl"]
+url = "https://api.github.com/repos/aws/aws-sdk-js/contents/apis"
+req = HTTP.get(url, headers)
+files = JSON.parse(String(req.body), dicttype=DataStructures.OrderedDict)
+filter!(f -> occursin(r".normal.json$", f["name"]), files)  # Only get ${Service}.normal.json files
+
+println(json(_generate_low_level_wrapper(files), 2))
 end
