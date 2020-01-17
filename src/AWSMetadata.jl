@@ -62,7 +62,6 @@ function parse_aws_metadata()
     end
 
     if data_changed
-        println(services_modified)
         _generate_low_level_wrapper(files)
         open("metadata.json", "w") do f
             print(f, json(OrderedDict(metadata), 2))
@@ -76,6 +75,9 @@ end
 Generates the low level AWSCorePrototype wrapper.
 """
 function _generate_low_level_wrapper(services)
+    # TODO:
+    # - How do we deal with multiple versions of the same service? e.g. cloudfront
+    # - We now generate the same const over and over again
     println("Generating low level wrapper")
     service_definitions = _generate_service_definitions(services)
 
@@ -131,12 +133,5 @@ function _generate_service_definition(service)
     end
 end
 
-
-headers = ["User-Agent" => "JuliaCloud/AWSCore.jl"]
-url = "https://api.github.com/repos/aws/aws-sdk-js/contents/apis"
-req = HTTP.get(url, headers)
-files = JSON.parse(String(req.body), dicttype=DataStructures.OrderedDict)
-filter!(f -> occursin(r".normal.json$", f["name"]), files)  # Only get ${Service}.normal.json files
-
-println(json(_generate_low_level_wrapper(files), 2))
+parse_aws_metadata()
 end
