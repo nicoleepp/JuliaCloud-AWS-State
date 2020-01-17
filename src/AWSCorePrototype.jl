@@ -17,6 +17,7 @@ mutable struct JSONService
     api_version::String
 
     json_version::String
+    target::String
 end
 
 mutable struct RestJSONService
@@ -45,6 +46,7 @@ function (service::QueryService)(aws::AWSConfig, operation, args=[])
         operation=operation,
         args=args
     )
+end
 (service::QueryService)(operation, args=[]) = service(default_aws_config(), operation, args)
 (service::QueryService)(a...; b...) = service(a..., b)
 
