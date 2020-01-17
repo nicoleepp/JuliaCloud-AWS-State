@@ -113,24 +113,22 @@ function _generate_service_definitions(services)
 end
 
 function _generate_service_definition(service)
-    # TODO:
-    # - Do not use service["endpointPrefix"] when generating, this does not give a valid
-    # name back for every service
     println("Generating Service for ", service["serviceId"])
     request_protocol = service["protocol"]
     service_name = service["endpointPrefix"]
+    service_id = replace(lowercase(service["serviceId"]), ' ' => '_')
     api_version = service["apiVersion"]
 
     if request_protocol == "rest-xml"
-        return "const $service_name = AWSCorePrototype.RestXMLService(\"$service_name\", \"$api_version\")"
+        return "const $service_id = AWSCorePrototype.RestXMLService(\"$service_name\", \"$api_version\")"
     elseif request_protocol == "json"
         json_version = service["jsonVersion"]
         target = service["targetPrefix"]
-        return "const $service_name = AWSCorePrototype.JSONService(\"$service_name\", \"$api_version\", \"$json_version\", \"$target\")"
+        return "const $service_id = AWSCorePrototype.JSONService(\"$service_name\", \"$api_version\", \"$json_version\", \"$target\")"
     elseif request_protocol == "query" || request_protocol == "ec2"
-        return "const $service_name = AWSCorePrototype.QueryService(\"$service_name\", \"$api_version\")"
+        return "const $service_id = AWSCorePrototype.QueryService(\"$service_name\", \"$api_version\")"
     elseif request_protocol == "rest-json"
-        return "const $service_name = AWSCorePrototype.RestJSONService(\"$service_name\", \"$api_version\")"
+        return "const $service_id = AWSCorePrototype.RestJSONService(\"$service_name\", \"$api_version\")"
     else
         println(service_name, " uses a new protocol ", request_protocol)
     end
