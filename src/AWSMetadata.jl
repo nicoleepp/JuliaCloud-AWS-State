@@ -124,6 +124,9 @@ function _generate_service_definition(service)
 end
 
 function _generate_rest_xml_high_level_wrapper(service_name, operations, shapes)
+    # TODO:
+    # - When generating S3 the documentation ends up with $ScanRange set in it which breaks things
+    # - Pull down documentation for each input variable and write to the docstr
     function_definitions = String[]
 
     for operation in operations
@@ -172,18 +175,11 @@ function _generate_rest_xml_high_level_wrapper(service_name, operations, shapes)
     end
 end
 
-function _generate_query_high_level_wrapper(service_name, operations, shapes)
-end
-
-function _generate_rest_json_high_level_wrapper(service_name, operations, shapes)
-end
-
-function _generate_json_high_level_wrapper(service_name, operations, shapes)
-end
-
 function _generate_high_level_wrapper(services)
     # TODO:
-    # - When generating S3 the documentation ends up with $ScanRange set in it which breaks things
+    # - Create functions for query, rest-json, and json protocols
+    #   These only seem to differ from rest-xml with how their shapes are defined
+    #   We only need to pull the required uri params down for function definitions
     for service in services
         println("Generating high level wrapper for $service")
         service = JSON.parse(String(HTTP.get(service["download_url"]).body))
@@ -194,26 +190,12 @@ function _generate_high_level_wrapper(services)
 
         protocol = service["metadata"]["protocol"]
 
-        if protocol in ["rest-xml", "query", "ec2", "rest-json"]
+        if protocol in ["rest-xml"]
             _generate_rest_xml_high_level_wrapper(service_name, operations, shapes)
         end
     end
 end
 
-function high_level_testing()
-    s3 = Dict("name" => "s3-2006-03-01.normal.json", "download_url" => "https://raw.githubusercontent.com/aws/aws-sdk-js/master/apis/s3-2006-03-01.normal.json")
-    result = _generate_high_level_wrapper([s3])
-
-    text_to_write = join(result, "\n")
-
-    open("services/s3.jl", "w") do f
-        println(f, "module aws_s3")
-        println(f, "include(\"AWSCorePrototypeServices.jl\")")
-        println(f, "using .AWSCorePrototypeServices: s3\n")
-        print(f, text_to_write)
-        println(f, "end")
-    end
-end
-
 parse_aws_metadata()
+
 end
