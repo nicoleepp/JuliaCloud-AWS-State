@@ -114,7 +114,7 @@ function _generate_service_definition(service)
         json_version = service["jsonVersion"]
         target = service["targetPrefix"]
         return "const $service_id = AWSCorePrototype.JSONService(\"$service_name\", \"$api_version\", \"$json_version\", \"$target\")"
-    elseif request_protocol == "query" || request_protocol == "ec2"
+    elseif request_protocol in ["ec2", "query"]
         return "const $service_id = AWSCorePrototype.QueryService(\"$service_name\", \"$api_version\")"
     elseif request_protocol == "rest-json"
         return "const $service_id = AWSCorePrototype.RestJSONService(\"$service_name\", \"$api_version\")"
@@ -172,6 +172,15 @@ function _generate_rest_xml_high_level_wrapper(service_name, operations, shapes)
     end
 end
 
+function _generate_query_high_level_wrapper(service_name, operations, shapes)
+end
+
+function _generate_rest_json_high_level_wrapper(service_name, operations, shapes)
+end
+
+function _generate_json_high_level_wrapper(service_name, operations, shapes)
+end
+
 function _generate_high_level_wrapper(services)
     # TODO:
     # - When generating S3 the documentation ends up with $ScanRange set in it which breaks things
@@ -185,7 +194,7 @@ function _generate_high_level_wrapper(services)
 
         protocol = service["metadata"]["protocol"]
 
-        if protocol == "rest-xml"
+        if protocol in ["rest-xml", "query", "ec2", "rest-json"]
             _generate_rest_xml_high_level_wrapper(service_name, operations, shapes)
         end
     end
