@@ -1,6 +1,6 @@
 module AWSMetadata
 
-using DataStructures
+using DataStructures: OrderedDict
 using HTTP
 using JSON
 
@@ -16,15 +16,14 @@ updated and we need to re-generate low and high level wrappers for the service.
 """
 function parse_aws_metadata()
     # TODO:
-    # - Only support the latest API version
+    # - Only support the latest API version, need to add another filter!(files)
     # - Generate high-level wrapper for each service
     # - Only regenerate API definitions for services which have changed
-
-    metadata = JSON.parsefile("metadata.json", dicttype=DataStructures.OrderedDict)
+    metadata = JSON.parsefile("metadata.json", dicttype=OrderedDict)
     headers = ["User-Agent" => "JuliaCloud/AWSCore.jl"]
     url = "https://api.github.com/repos/aws/aws-sdk-js/contents/apis"
     req = HTTP.get(url, headers)
-    files = JSON.parse(String(req.body), dicttype=DataStructures.OrderedDict)
+    files = JSON.parse(String(req.body), dicttype=OrderedDict)
     filter!(f -> occursin(r".normal.json$", f["name"]), files)  # Only get ${Service}.normal.json files
     data_changed = false
     services_modified = String[]
@@ -55,6 +54,8 @@ function parse_aws_metadata()
     end
 
     if data_changed
+        # Should move this generation to _process_service() so we don't regenerate for every
+        # service, just the ones that change
         _generate_low_level_wrapper(files)
         _generate_high_level_wrapper(files)
         open("metadata.json", "w") do f
@@ -88,7 +89,8 @@ function _generate_service_definitions(services)
     service_definitions = String[]
 
     for service in services
-        #println("Generating low level wrapper for $service")
+        service_name = service["name"]
+        println("Generating low level wrapper for $service_name")
         request = HTTP.get(service["download_url"])
         service_metadata = JSON.parse(String(request.body))["metadata"]
 
@@ -108,17 +110,14 @@ function _generate_service_definition(service)
     service_id = replace(lowercase(service["serviceId"]), ' ' => '_')
     api_version = service["apiVersion"]
 
-    if request_protocol == "rest-xml"
+    if request_protocol in ["rest-xml", "ec2", "query", "rest-json"]
         return "const $service_id = AWSCorePrototype.RestXMLService(\"$service_name\", \"$api_version\")"
     elseif request_protocol == "json"
         json_version = service["jsonVersion"]
         target = service["targetPrefix"]
         return "const $service_id = AWSCorePrototype.JSONService(\"$service_name\", \"$api_version\", \"$json_version\", \"$target\")"
-    elseif request_protocol in ["ec2", "query"]
-        return "const $service_id = AWSCorePrototype.QueryService(\"$service_name\", \"$api_version\")"
-    elseif request_protocol == "rest-json"
-        return "const $service_id = AWSCorePrototype.RestJSONService(\"$service_name\", \"$api_version\")"
     else
+        # This should ping an alarm, we need to update this source code as its something we haven't seen before
         println(service_name, " uses a new protocol ", request_protocol)
     end
 end
@@ -181,7 +180,8 @@ function _generate_high_level_wrapper(services)
     #   These only seem to differ from rest-xml with how their shapes are defined
     #   We only need to pull the required uri params down for function definitions
     for service in services
-        println("Generating high level wrapper for $service")
+        service_name = service["name"]
+        println("Generating high level wrapper for $service_name")
         service = JSON.parse(String(HTTP.get(service["download_url"]).body))
         service_name = lowercase(service["metadata"]["serviceId"])
         service_name = replace(service_name, ' ' => '_')
