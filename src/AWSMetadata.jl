@@ -67,11 +67,10 @@ function _generate_low_level_wrapper(services)
     # TODO:
     # - How do we deal with multiple versions of the same service? e.g. cloudfront
     # - We now generate the same const over and over again
-    println("Generating low level wrapper")
     service_definitions = _generate_service_definitions(services)
 
     template = """
-    module AWSCoreServices
+    module AWSCorePrototypeServices
 
     include("AWSCorePrototype.jl")
 
@@ -89,6 +88,7 @@ function _generate_service_definitions(services)
     service_definitions = String[]
 
     for service in services
+        #println("Generating low level wrapper for $service")
         request = HTTP.get(service["download_url"])
         service_metadata = JSON.parse(String(request.body))["metadata"]
 
@@ -102,7 +102,7 @@ function _generate_service_definitions(services)
 end
 
 function _generate_service_definition(service)
-    println("Generating Service for ", service["serviceId"])
+    println("Generating Metadata definitions for ", service["serviceId"])
     request_protocol = service["protocol"]
     service_name = service["endpointPrefix"]
     service_id = replace(lowercase(service["serviceId"]), ' ' => '_')
@@ -123,51 +123,71 @@ function _generate_service_definition(service)
     end
 end
 
+function _generate_rest_xml_high_level_wrapper(service_name, operations, shapes)
+    function_definitions = String[]
+
+    for operation in operations
+        operation = operation[2]
+        name = operation["name"]
+        method = operation["http"]["method"]
+        request_uri = operation["http"]["requestUri"]
+
+        # Replace curly braces around parameters in the request_uri with a $, so Julia can pass the parameters along
+        request_uri = replace(request_uri, '{' => "\$")
+        request_uri = replace(request_uri, '}' => "")
+
+        # Removes everything inbetween <> characters
+        documentation = ""
+        if haskey(operation, "documentation")
+            documentation = operation["documentation"]
+            documentation = replace(documentation, r"\<.*?\>" => "")
+        end
+
+        required_parameters = ""
+
+        if haskey(operation, "input")
+            input_shape = shapes[operation["input"]["shape"]]
+
+            if haskey(input_shape, "required")
+                required_parameters = input_shape["required"]
+            end
+        end
+
+        definition = """
+        \"\"\"
+        $documentation
+        \"\"\"
+        $name($(join(required_parameters, ", "))) = $service_name(\"$method\", \"$request_uri\")
+        """
+
+        push!(function_definitions, definition)
+    end
+
+    open("services/$service_name.jl", "w") do f
+        println(f, "module aws_$service_name")
+        println(f, "include(\"AWSCorePrototypeServices.jl\")")
+        println(f, "using .AWSCorePrototypeServices: $service_name\n")
+        print(f, join(function_definitions, "\n"))
+        println(f, "end")
+    end
+end
+
 function _generate_high_level_wrapper(services)
     # TODO:
     # - When generating S3 the documentation ends up with $ScanRange set in it which breaks things
-
-    println("Generating high level wrappers")
-
     for service in services
+        println("Generating high level wrapper for $service")
         service = JSON.parse(String(HTTP.get(service["download_url"]).body))
         service_name = lowercase(service["metadata"]["serviceId"])
+        service_name = replace(service_name, ' ' => '_')
         operations = service["operations"]
         shapes = service["shapes"]
 
-        function_definitions = String[]
+        protocol = service["metadata"]["protocol"]
 
-        for operation in operations
-            operation = operation[2]
-            name = operation["name"]
-            method = operation["http"]["method"]
-            request_uri = operation["http"]["requestUri"]
-
-            # Replace curly braces around parameters in the request_uri with a $, so Julia can pass the parameters along
-            request_uri = replace(request_uri, '{' => "\$")
-            request_uri = replace(request_uri, '}' => "")
-
-            documentation = operation["documentation"]
-            documentation = replace(documentation, r"\<.*?\>" => "")  # Removes everything inbetween <> characters.
-
-            required_parameters = ""
-
-            if haskey(operation, "input")
-                input_shape = shapes[operation["input"]["shape"]]
-                required_parameters = input_shape["required"]
-            end
-
-            definition = """
-            \"\"\"
-            $documentation
-            \"\"\"
-            $name($(join(required_parameters, ", "))) = $service_name(\"$method\", \"$request_uri\")
-            """
-
-            push!(function_definitions, definition)
+        if protocol == "rest-xml"
+            _generate_rest_xml_high_level_wrapper(service_name, operations, shapes)
         end
-
-        return function_definitions
     end
 end
 
@@ -180,12 +200,11 @@ function high_level_testing()
     open("services/s3.jl", "w") do f
         println(f, "module aws_s3")
         println(f, "include(\"AWSCorePrototypeServices.jl\")")
-        println(f, "using .AWSCoreServices: s3\n")
+        println(f, "using .AWSCorePrototypeServices: s3\n")
         print(f, text_to_write)
         println(f, "end")
+    end
 end
 
-high_level_testing()
-
-end
+parse_aws_metadata()
 end

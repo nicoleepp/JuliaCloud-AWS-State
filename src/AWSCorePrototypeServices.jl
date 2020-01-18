@@ -1,4 +1,4 @@
-module AWSCoreServices
+module AWSCorePrototypeServices
 
 include("AWSCorePrototype.jl")
 

@@ -80,7 +80,7 @@
     "version": "2018-11-15"
   },
   "batch-2016-08-10.normal.json": {
-    "sha": "7d610f6b22d41870225a0eade9a6b0c865222cd6",
+    "sha": "0317690469b89ab7bb98e30dbb2acc28dca37fa5",
     "version": "2016-08-10"
   },
   "budgets-2016-10-20.normal.json": {
@@ -140,7 +140,7 @@
     "version": "2014-05-30"
   },
   "cloudhsmv2-2017-04-28.normal.json": {
-    "sha": "fa9497bf57e2923b1d6b24f0fd158ddf99a7f470",
+    "sha": "82ff26a97855fd370277deb7a6874522234bce53",
     "version": "2017-04-28"
   },
   "cloudsearch-2011-02-01.normal.json": {
@@ -308,7 +308,7 @@
     "version": "2015-09-21"
   },
   "ecs-2014-11-13.normal.json": {
-    "sha": "077e2c820416ec943bc1e17030d8212980265516",
+    "sha": "2611ffbf28f78b3d76a650496adfdd813fa40a6b",
     "version": "2014-11-13"
   },
   "eks-2017-11-01.normal.json": {
@@ -572,7 +572,7 @@
     "version": "2018-11-14"
   },
   "mediaconvert-2017-08-29.normal.json": {
-    "sha": "2d6c729e483d1a546e321c08b07e25393bc3c7d5",
+    "sha": "3032f90fbae15df183668820ecb333d366e2397d",
     "version": "2017-08-29"
   },
   "medialive-2017-10-14.normal.json": {
@@ -628,7 +628,7 @@
     "version": "2017-01-17"
   },
   "neptune-2014-10-31.normal.json": {
-    "sha": "2d565594869fd97146cf8dbd59d98407bb561a23",
+    "sha": "0d46cc08e3238893fe7f466c6a82f98b6a322b43",
     "version": "2014-10-31"
   },
   "networkmanager-2019-07-05.normal.json": {
@@ -724,7 +724,7 @@
     "version": "2018-08-01"
   },
   "redshift-2012-12-01.normal.json": {
-    "sha": "fe0c255ffa73428a6d4681ee2cca4637d08bdfc3",
+    "sha": "d5f963b5da4d10c69b658e66116a02b45525da97",
     "version": "2012-12-01"
   },
   "rekognition-2016-06-27.normal.json": {
