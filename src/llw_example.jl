@@ -1,5 +1,6 @@
 include("AWSCorePrototypeServices.jl")
-
 s3 = AWSCoreServices.s3
 
-println(s3("GET", "/"))
+res = s3("GET", "/")
+
+println(res)

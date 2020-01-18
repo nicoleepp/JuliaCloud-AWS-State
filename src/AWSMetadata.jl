@@ -16,10 +16,9 @@ updated and we need to re-generate low and high level wrappers for the service.
 """
 function parse_aws_metadata()
     # TODO:
-    # - Generate low-level wrapper consts
-    # - Generate high-level wrapper for each service that has been updated
-    #   - If a service definition has changed or been added, add the name to a list
-    #     Then pass this list to another function
+    # - Only support the latest API version
+    # - Generate high-level wrapper for each service
+    # - Only regenerate API definitions for services which have changed
 
     metadata = JSON.parsefile("metadata.json", dicttype=DataStructures.OrderedDict)
     headers = ["User-Agent" => "JuliaCloud/AWSCore.jl"]
@@ -37,12 +36,6 @@ function parse_aws_metadata()
     end
 
     for file in files
-        """
-        TODO -  Do we want to use the file["name"] or service_name?
-
-        If we're using the service_name, how do we differentiate between different service
-        versions? Do we care about using old versions; or only support the latest API version?
-        """
         filename = join(split(file["name"], '.')[1:end-2],'.')
         filename = split(filename, '-')
         service_name = join(filename[1:end-3], '-')
@@ -63,17 +56,13 @@ function parse_aws_metadata()
 
     if data_changed
         _generate_low_level_wrapper(files)
+        _generate_high_level_wrapper(files)
         open("metadata.json", "w") do f
             print(f, json(OrderedDict(metadata), 2))
         end
     end
 end
 
-"""
-    _generate_low_level_wrapper(services)
-
-Generates the low level AWSCorePrototype wrapper.
-"""
 function _generate_low_level_wrapper(services)
     # TODO:
     # - How do we deal with multiple versions of the same service? e.g. cloudfront
@@ -134,5 +123,69 @@ function _generate_service_definition(service)
     end
 end
 
-parse_aws_metadata()
+function _generate_high_level_wrapper(services)
+    # TODO:
+    # - When generating S3 the documentation ends up with $ScanRange set in it which breaks things
+
+    println("Generating high level wrappers")
+
+    for service in services
+        service = JSON.parse(String(HTTP.get(service["download_url"]).body))
+        service_name = lowercase(service["metadata"]["serviceId"])
+        operations = service["operations"]
+        shapes = service["shapes"]
+
+        function_definitions = String[]
+
+        for operation in operations
+            operation = operation[2]
+            name = operation["name"]
+            method = operation["http"]["method"]
+            request_uri = operation["http"]["requestUri"]
+
+            # Replace curly braces around parameters in the request_uri with a $, so Julia can pass the parameters along
+            request_uri = replace(request_uri, '{' => "\$")
+            request_uri = replace(request_uri, '}' => "")
+
+            documentation = operation["documentation"]
+            documentation = replace(documentation, r"\<.*?\>" => "")  # Removes everything inbetween <> characters.
+
+            required_parameters = ""
+
+            if haskey(operation, "input")
+                input_shape = shapes[operation["input"]["shape"]]
+                required_parameters = input_shape["required"]
+            end
+
+            definition = """
+            \"\"\"
+            $documentation
+            \"\"\"
+            $name($(join(required_parameters, ", "))) = $service_name(\"$method\", \"$request_uri\")
+            """
+
+            push!(function_definitions, definition)
+        end
+
+        return function_definitions
+    end
+end
+
+function high_level_testing()
+    s3 = Dict("name" => "s3-2006-03-01.normal.json", "download_url" => "https://raw.githubusercontent.com/aws/aws-sdk-js/master/apis/s3-2006-03-01.normal.json")
+    result = _generate_high_level_wrapper([s3])
+
+    text_to_write = join(result, "\n")
+
+    open("services/s3.jl", "w") do f
+        println(f, "module aws_s3")
+        println(f, "include(\"AWSCorePrototypeServices.jl\")")
+        println(f, "using .AWSCoreServices: s3\n")
+        print(f, text_to_write)
+        println(f, "end")
+end
+
+high_level_testing()
+
+end
 end
