@@ -126,23 +126,36 @@ If an API needs to be created or updated it will automatically regenerate the lo
 ## Use Cases
 
 ### Creating or Updating an API Wrapper
-The GitHub action will run once daily, it will look at the [`aws-sdk-js/apis/`](https://github.com/aws/aws-sdk-js/tree/master/apis) and filter a list of `${Service}.normal.json` files.
-It will load the `AWSCore.jl/metadata.json` and check to see if a service has an entry; if it does not then we know AWS has released a new service and we need to create wrappers for it.
-If the service already exists in the `AWSCore.jl/metadata.json` file, we will compare the `SHA hashes` of what is stored in our repo and in the `AWS SDK JS`.
-If these hashes differ, we know Amazon has updated their API and we need to regenerate our wrappers.
-
 ![Create Update API Workflow](imgs/Create-Update-API-Workflow.png)
 
 ### Low-Level Wrapper Usage
+Low-Level wrapper usage would look similar to the current `AWSCore.jl`.
+
+
+```julia
+include("AWSCorePrototypeServices.jl")
+s3 = AWSCorePrototypeServices.s3
+
+buckets = s3("GET", "/")
+
+println(buckets)
+```
 
 ### High-Level Wrapper Usage
+
+```julia
+include("services/s3.jl")
+using .aws_s3
+
+buckets = aws_s3.ListBuckets()
+println(buckets)
+```
 
 ## In Scope -- TODO
 
 ## Out of Scope -- TODO
 
 ## Measures of Success -- TODO
-
 
 ### Update API Definitions
 
