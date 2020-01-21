@@ -12,6 +12,9 @@ matt.brzezinski@invenia.ca
 Using AWS Services in Julia is currently more difficult than it needs to be.
 Users are currently limited to the low-level wrappers which require the knowledge of everything that goes into an operation.
 Or they are limited to high-level wrappers which may or may not be available for the service which the want to use.
+AWS API packages currently need to be manually updated, there is no documentation for this process.
+
+This document proposes a system which automates updating API definitions, and uses multiple dispatch for making AWS requests. 
 
 ## Current State
 There are two categories of packages currently supporting AWS usage in `JuliaCloud`.
@@ -65,9 +68,9 @@ using AWSCore
 s3_list_buckets()
 ```
 
-## Proposed Solution -- TODO
-I propose that we tag the current version of `AWSCore.jl` to `v1.0`, and begin working on `v2.0`.
-Version 2 of `AWSCore.jl` would consist of:
+## Proposed Solution
+I propose that we tag the current version of `AWSCore.jl@1.0`, and begin working on `AWSCore.jl@2.0`.
+`AWSCore.jl@2.0` would consist of:
 
 - Taking advantage of Julia's multiple dispatch for making AWS service requests
 - Automating the creation and updating of service definitions using GitHub actions
@@ -152,11 +155,19 @@ buckets = aws_s3.ListBuckets()
 println(buckets)
 ```
 
-## In Scope -- TODO
+## In Scope
+- Code generate low and high level wrappers
+- Use multiple dispatch on a request type
+- Archive single AWS Service high-level wrappers, and other low-level wrapper packages
+- Increase code coverage of unit tests for each AWS Service
 
-## Out of Scope -- TODO
+## Out of Scope
+- Handling other cloud service providers such as Azure, or Google Cloud Platform
 
-## Measures of Success -- TODO
+## Measures of Success
+- Decrease the size of the code base
+- Increase the performance making requests to AWS
+- Get code coverage for unit tests to 100%
 
 ## Dependencies
 To automate the creation of high and low level wrappers in Julia we must pull AWS Service definitions from an external source.
@@ -164,6 +175,14 @@ The [`JavaScript SDK`](https://github.com/aws/aws-sdk-js/tree/master/apis) is th
 While other SDKs define them on a per language basis.
 
 We need to also have some service to run the code which will automate the creation or updating of a service, such as [`GitHub actions`](https://github.com/features/actions).
+Certain actions are already created, and can simplify this process such as:
+- [Julia Actions Organization](https://github.com/julia-actions)
+- [Setup Julia in Actions](https://github.com/julia-actions/setup-julia)
+- [Build Julia Package](https://github.com/julia-actions/julia-buildpkg)
+- [Run Julia Tests](https://github.com/julia-actions/julia-runtest)
+- [Deploy Julia Docs](https://github.com/julia-actions/julia-docdeploy)
+- [Create Pull Request](https://github.com/marketplace/actions/create-pull-request)
+
 
 We will need to depend on other Julia packages.
 A short list of them would be:
