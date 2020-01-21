@@ -71,6 +71,9 @@ Version 2 of `AWSCore.jl` would consist of:
 
 - Taking advantage of Julia's multiple dispatch for making AWS service requests
 - Automating the creation and updating of service definitions using GitHub actions
+- Low and High Level API wrappers
+
+After the release of `AWSCore.jl@2.0` the archive and deprecation of other low and high level wrapper packages can occur.
 
 The proposed architecture for a system would look like:
 
@@ -131,7 +134,6 @@ If an API needs to be created or updated it will automatically regenerate the lo
 ### Low-Level Wrapper Usage
 Low-Level wrapper usage would look similar to the current `AWSCore.jl`.
 
-
 ```julia
 include("AWSCorePrototypeServices.jl")
 s3 = AWSCorePrototypeServices.s3
@@ -142,7 +144,6 @@ println(buckets)
 ```
 
 ### High-Level Wrapper Usage
-
 ```julia
 include("services/s3.jl")
 using .aws_s3
@@ -157,14 +158,6 @@ println(buckets)
 
 ## Measures of Success -- TODO
 
-### Update API Definitions
-
-### Usage of Low Level Wrapper
-
-### Usage of High Level Wrapper
-
-### Converting high-level to low-level code
-
 ## Dependencies
 To automate the creation of high and low level wrappers in Julia we must pull AWS Service definitions from an external source.
 The [`JavaScript SDK`](https://github.com/aws/aws-sdk-js/tree/master/apis) is the most simple to parse as all service definitions are defined as JSON files.
@@ -172,29 +165,50 @@ While other SDKs define them on a per language basis.
 
 We need to also have some service to run the code which will automate the creation or updating of a service, such as [`GitHub actions`](https://github.com/features/actions).
 
-Current Julia Package dependencies
-- DataStructures
-- Dates
-- HTTP
-- Inifile
-- JSON
-- LazyJSON
-- MbedTLS
-- Mocking
-- Retry
-- Sockets
-- SymDict
-- XMLDict
+We will need to depend on other Julia packages.
+A short list of them would be:
 
-## Functional Requirements -- TODO
+- [DataStructures.jl](https://github.com/JuliaCollections/DataStructures.jl)
+- [EzXML.jl](https://github.com/bicycle1885/EzXML.jl)
+- [HTTP.jl](https://github.com/JuliaWeb/HTTP.jl)
+- [Inifile.jl](https://github.com/JuliaIO/IniFile.jl) or some other well maintained alternative?
+- [JSON.jl](https://github.com/JuliaIO/JSON.jl) or [JSON3.jl](https://github.com/quinnj/JSON3.jl)
+- [MbedTLS.jl](https://github.com/JuliaLang/MbedTLS.jl)
+- [Mocking.jl](https://github.com/invenia/Mocking.jl)
+- [Retry.jl](https://github.com/JuliaWeb/Retry.jl) or some other well maintained alternative?
+- [Sockets.jl](https://github.com/JuliaLang/julia/blob/master/stdlib/Sockets/src/Sockets.jl)
 
-## Non-Functional Requirements -- TODO
+## Functional Requirements
+- Users should be able to easily use the package, and only load the necessary modules for their code.
+- The package should have a well defined API and design.
+- Making calls to AWS should be performant.
+- Decrease the time between Amazon launching a service, and the API being available in Julia.
 
-## Metrics -- TODO
+## Non-Functional Requirements
+- The only manual process of updating API wrapper definitions should be creating new unit tests and review the generated changes.
+- The system should be well documented, such that anyone in the Julia community can have a good understanding of the system components and is able to contribute to the repository. 
+- The system should extendable so that new AWS Services can automatically be created.
 
-## Alarms -- TODO
+## Metrics
+- How often are services being updated / created? 
+  - Is checking daily a good time frame?
+  - How do we handle metrics, can GitHub Actions support this?
 
-## Open Issues -- TODO
+## Alarms
+- If a new `protocol` (not `REST-XML, JSON, REST-JSON, or Query`) is being used for a Service we should trigger an alarm.
+Amazon is now making a new service and the auto-generation code needs to accommodate the new `protocol`.
+
+## Open Issues
+- Do we want to auto-generate high level wrappers and commit them to the code base?
+  - Or only generate the low-level wrappers, and if a user wants they can generate the high-level wrappers themselves to have access to them?
+  - Or just pull this out and have a separate high-level package for everything?
+- How do we use GitHub actions to execute code?
+- Should we attempt to automate the creation of unit tests as well?
+    - I would argue no, and that these should be created by hand.
+    - It would be tedious, however it will give us the backing that the generated code is correct.
+- Which Julia JSON package should we be using?
+  - What are the pros/cons of each of them?
+  - [List of Julia JSON packages](https://github.com/search?l=Julia&q=json.jl&type=Repositories)
 
 ## Appendix
 
@@ -209,7 +223,7 @@ with open("api_files.txt") as f:
 
   for line in f.readlines():
     services.add(re.split("-\d", line)[0])
-  print(len(services))  # 220 (as of 2019-12-17
+  print(len(services))  # 220 (as of 2019-12-17)
 ```
 
 ### List of low-level wrappers
