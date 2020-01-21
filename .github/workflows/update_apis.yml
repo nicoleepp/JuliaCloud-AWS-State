@@ -1,5 +1,6 @@
 name: AWSMetadata
 
+# Change this to daily in prod
 on: [push]
 
 jobs:

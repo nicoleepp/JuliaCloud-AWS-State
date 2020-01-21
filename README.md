@@ -8,13 +8,16 @@ matt.brzezinski@invenia.ca
 - Use automation and code generation as much as possible
 - Create a simple straight-forward systems design
 
-## Executive Summary  -- TODO
+## Executive Summary
 Using AWS Services in Julia is currently more difficult than it needs to be.
-Users are currently limited to the low-level wrappers which require the knowledge of everything that goes into an operation.
-Or they are limited to high-level wrappers which may or may not be available for the service which the want to use.
-AWS API packages currently need to be manually updated, there is no documentation for this process.
+Users are currently limited to either the low-level API wrappers, which require knowing the `service`, `operation type`, and `uri` as outlined by Amazon.
+Or users can use a high-level wrapper package which may or may not be available for the service which they want to use.
+Updating these API packages is currently undocumented and a manual process.
 
-This document proposes a system which automates updating API definitions, and uses multiple dispatch for making AWS requests. 
+This document proposes a system which can automatically update low and high level API wrappers for AWS Services.
+As well as using one of Julia's key features, multiple dispatch, to dispatch on the request type rather than having an individual function for each AWS Service.
+
+These changes will allow JuliaCloud to always have an up-to-date package with the latest Amazon Service APIs. 
 
 ## Current State
 There are two categories of packages currently supporting AWS usage in `JuliaCloud`.
@@ -125,9 +128,9 @@ end
 `AWSMetadata.jl` contains all the functions for updating both the low and high level API wrappers.
 `metadata.json` is used in tandem to hold the `SHA` hashes for each version, as well as their API Versions.
 
-### GitHub Actions
-These actions will be used daily to check for new AWS Service APIs or updates to existing ones.
-If an API needs to be created or updated it will automatically regenerate the low and high level wrappers and submit a merge request with the changes.
+### `GitHub Actions`
+We can use GitHub actions to automatically create or update AWS Service APIs on a daily basis.
+We can also use GitHub actions to trigger alarms and gather metrics.
 
 ## Use Cases
 
@@ -142,7 +145,6 @@ include("AWSCorePrototypeServices.jl")
 s3 = AWSCorePrototypeServices.s3
 
 buckets = s3("GET", "/")
-
 println(buckets)
 ```
 
@@ -176,13 +178,8 @@ While other SDKs define them on a per language basis.
 
 We need to also have some service to run the code which will automate the creation or updating of a service, such as [`GitHub actions`](https://github.com/features/actions).
 Certain actions are already created, and can simplify this process such as:
-- [Julia Actions Organization](https://github.com/julia-actions)
 - [Setup Julia in Actions](https://github.com/julia-actions/setup-julia)
-- [Build Julia Package](https://github.com/julia-actions/julia-buildpkg)
-- [Run Julia Tests](https://github.com/julia-actions/julia-runtest)
-- [Deploy Julia Docs](https://github.com/julia-actions/julia-docdeploy)
 - [Create Pull Request](https://github.com/marketplace/actions/create-pull-request)
-
 
 We will need to depend on other Julia packages.
 A short list of them would be:
@@ -191,7 +188,7 @@ A short list of them would be:
 - [EzXML.jl](https://github.com/bicycle1885/EzXML.jl)
 - [HTTP.jl](https://github.com/JuliaWeb/HTTP.jl)
 - [Inifile.jl](https://github.com/JuliaIO/IniFile.jl) or some other well maintained alternative?
-- [JSON.jl](https://github.com/JuliaIO/JSON.jl) or [JSON3.jl](https://github.com/quinnj/JSON3.jl)
+- [JSON3.jl](https://github.com/quinnj/JSON3.jl) or some other well maintained alternative?
 - [MbedTLS.jl](https://github.com/JuliaLang/MbedTLS.jl)
 - [Mocking.jl](https://github.com/invenia/Mocking.jl)
 - [Retry.jl](https://github.com/JuliaWeb/Retry.jl) or some other well maintained alternative?
@@ -211,7 +208,7 @@ A short list of them would be:
 ## Metrics
 - How often are services being updated / created? 
   - Is checking daily a good time frame?
-  - How do we handle metrics, can GitHub Actions support this?
+  - How do we handle metrics, GitHub Actions?
 
 ## Alarms
 - If a new `protocol` (not `REST-XML, JSON, REST-JSON, or Query`) is being used for a Service we should trigger an alarm.
@@ -221,10 +218,12 @@ Amazon is now making a new service and the auto-generation code needs to accommo
 - Do we want to auto-generate high level wrappers and commit them to the code base?
   - Or only generate the low-level wrappers, and if a user wants they can generate the high-level wrappers themselves to have access to them?
   - Or just pull this out and have a separate high-level package for everything?
-- How do we use GitHub actions to execute code?
 - Should we attempt to automate the creation of unit tests as well?
     - I would argue no, and that these should be created by hand.
     - It would be tedious, however it will give us the backing that the generated code is correct.
+- Do we go all in on GitHub Actions?
+    - We can replace TravisCI (what is currently used) to run tests
+    - Quick overview I found between the two, [link](https://github.com/datamade/how-to/issues/36#issuecomment-531406762)
 - Which Julia JSON package should we be using?
   - What are the pros/cons of each of them?
   - [List of Julia JSON packages](https://github.com/search?l=Julia&q=json.jl&type=Repositories)
