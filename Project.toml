@@ -1,0 +1,9 @@
+name = "AWSCorePrototype"
+uuid = "0ec7f449-a2d3-5018-8dbd-e94767a98309"
+version = "0.0.1"
+
+[deps]
+AWSCore = "4f1ea46c-232b-54a6-9b17-cc2d0f3e6598"
+DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
+HTTP = "cd3eb016-35fb-5094-929b-558a96fad6f3"
+JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"

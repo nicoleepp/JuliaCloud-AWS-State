@@ -28,3 +28,4 @@ Manifest.toml
 .idea/*
 
 .DS_Store
+.Manifest.toml

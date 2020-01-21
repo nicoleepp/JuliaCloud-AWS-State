@@ -2,6 +2,8 @@ module AWSCorePrototype
 
 using AWSCore
 
+include("AWSMetadata.jl")
+
 mutable struct RestXMLService
     name::String
     api_version::String
