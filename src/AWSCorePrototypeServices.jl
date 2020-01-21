@@ -1,6 +1,6 @@
-module Services
+module AWSCorePrototypeServices
 
-using ..AWSCorePrototype
+include("../AWSCorePrototype.jl")
 
 const migration_hub = AWSCorePrototype.JSONService("mgh", "2017-05-31", "1.1", "AWSMigrationHub")
 const accessanalyzer = AWSCorePrototype.RestXMLService("access-analyzer", "2019-11-01")

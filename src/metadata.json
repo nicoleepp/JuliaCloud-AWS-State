@@ -16,7 +16,7 @@
     "version": "2017-08-22"
   },
   "alexaforbusiness-2017-11-09.normal.json": {
-    "sha": "9adef9ca7841cced88a4a38ae0e08dad099b97a2",
+    "sha": "3d4728441d4e84b61467e18fb827345536bca476",
     "version": "2017-11-09"
   },
   "amplify-2017-07-25.normal.json": {
@@ -44,7 +44,7 @@
     "version": "2016-02-06"
   },
   "application-insights-2018-11-25.normal.json": {
-    "sha": "e0af892cf7ac8be1a24b4a799a2ee0889480f383",
+    "sha": "9826dfdedc3ed4450a142387e277ef41679e3c0a",
     "version": "2018-11-25"
   },
   "appmesh-2018-10-01.normal.json": {
@@ -180,7 +180,7 @@
     "version": "2019-07-18"
   },
   "codepipeline-2015-07-09.normal.json": {
-    "sha": "41a74ea7a80d5a917beb6b71a43a57f5066d0f96",
+    "sha": "d5d2a266f46d7d956e1d597eb5331972bbd8aa2c",
     "version": "2015-07-09"
   },
   "codestar-2017-04-19.normal.json": {
@@ -264,7 +264,7 @@
     "version": "2012-10-25"
   },
   "discovery-2015-11-01.normal.json": {
-    "sha": "a5a074f2620de5dcc86a60c119beb12e372eec1b",
+    "sha": "9a142fdeaf4aa7d974d6e296b1b694847898dc87",
     "version": "2015-11-01"
   },
   "dlm-2018-01-12.normal.json": {
@@ -296,7 +296,7 @@
     "version": "2019-11-02"
   },
   "ec2-2016-11-15.normal.json": {
-    "sha": "0f6cf33442c0a1bddec8e6314b82d0db63b13bf7",
+    "sha": "d226c67aed1f8c01d98584ec051dedfb78cd498b",
     "version": "2016-11-15"
   },
   "ec2-instance-connect-2018-04-02.normal.json": {
@@ -464,7 +464,7 @@
     "version": "2017-11-27"
   },
   "iotevents-2018-07-27.normal.json": {
-    "sha": "24ef7b2ad3e16f82acfa440f899557a708b1d85f",
+    "sha": "6edc65da8b678dc62186a49c1cc8b4152d96db20",
     "version": "2018-07-27"
   },
   "iotevents-data-2018-10-23.normal.json": {
@@ -516,7 +516,7 @@
     "version": "2017-09-30"
   },
   "kms-2014-11-01.normal.json": {
-    "sha": "ae209ff2fc98efafad12fa9c1e7088d3374e1d42",
+    "sha": "b275baff4b1efb1f31c5c4e857d3476d646d4061",
     "version": "2014-11-01"
   },
   "lakeformation-2017-03-31.normal.json": {
@@ -528,7 +528,7 @@
     "version": "2014-11-11"
   },
   "lambda-2015-03-31.normal.json": {
-    "sha": "af4ec6f405e1dd6a19fd0c289ce458cd1120c5f4",
+    "sha": "ac4587686d24f3415cbf7f585656fcaa08457b29",
     "version": "2015-03-31"
   },
   "lex-models-2017-04-19.normal.json": {
@@ -564,7 +564,7 @@
     "version": "2018-09-17"
   },
   "marketplacecommerceanalytics-2015-07-01.normal.json": {
-    "sha": "020606fe40d144c2f3708587a55da6acd795895c",
+    "sha": "77997064f519ec10229fdc2c7c2185c8bf527101",
     "version": "2015-07-01"
   },
   "mediaconnect-2018-11-14.normal.json": {
@@ -616,7 +616,7 @@
     "version": "2014-06-05"
   },
   "monitoring-2010-08-01.normal.json": {
-    "sha": "5d94948ab5ff278880df86bb4563b23cbc2643fe",
+    "sha": "62eb8bdc0aa831d163a931a58067646c2b71306b",
     "version": "2010-08-01"
   },
   "mq-2017-11-27.normal.json": {
